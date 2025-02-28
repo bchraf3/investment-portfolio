@@ -1,0 +1,27 @@
+# .NET build outputs
+bin/
+obj/
+out/
+
+# Visual Studio files
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# MSTest results
+[Tt]est[Rr]esult*/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
