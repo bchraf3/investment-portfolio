@@ -27,6 +27,15 @@ public class ApplicationDbContext : DbContext
             .HasOne(i => i.Portfolio)
             .WithMany(p => p.Investments)
             .HasForeignKey(i => i.PortfolioId);
+
+        // Configure decimal precision for Investment
+        modelBuilder.Entity<Investment>()
+            .Property(i => i.Quantity)
+            .HasPrecision(18, 6);
+        
+        modelBuilder.Entity<Investment>()
+            .Property(i => i.PurchasePrice)
+            .HasPrecision(18, 2);
             
         // User to Portfolio relation
         modelBuilder.Entity<Portfolio>()
@@ -45,13 +54,35 @@ public class ApplicationDbContext : DbContext
             .HasOne(ip => ip.User)
             .WithOne(u => u.InvestmentProfile)
             .HasForeignKey<InvestmentProfile>(ip => ip.UserId);
+
+        // Configure decimal precision for InvestmentProfile
+        modelBuilder.Entity<InvestmentProfile>()
+            .Property(ip => ip.AnnualIncome)
+            .HasPrecision(18, 2);
+        
+        modelBuilder.Entity<InvestmentProfile>()
+            .Property(ip => ip.AnnualReturnGoal)
+            .HasPrecision(18, 2);
+        
+        modelBuilder.Entity<InvestmentProfile>()
+            .Property(ip => ip.MonthlyInvestmentGoal)
+            .HasPrecision(18, 2);
+        
+        modelBuilder.Entity<InvestmentProfile>()
+            .Property(ip => ip.NetWorth)
+            .HasPrecision(18, 2);
             
         // User to WatchlistItem
         modelBuilder.Entity<WatchlistItem>()
             .HasOne(wi => wi.User)
             .WithMany(u => u.Watchlist)
             .HasForeignKey(wi => wi.UserId);
-            
+
+        // Configure decimal precision for WatchlistItem
+        modelBuilder.Entity<WatchlistItem>()
+            .Property(wi => wi.PriceAlertThreshold)
+            .HasPrecision(18, 2);            
+        
         // User to UserActivity
         modelBuilder.Entity<UserActivity>()
             .HasOne(ua => ua.User)
