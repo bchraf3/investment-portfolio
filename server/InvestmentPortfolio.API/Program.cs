@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using InvestmentPortfolio.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +21,10 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers(); // // Registers services needed for MVC controllers so your API endpoints defined in controller classes will work
 builder.Services.AddEndpointsApiExplorer(); // // Adds services that generate API documentation metadata, which helps tools like Swagger understand your API structure
 builder.Services.AddSwaggerGen();
+
+// Add DbContext Service
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
