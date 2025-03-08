@@ -29,3 +29,6 @@ artifacts/
 # App Settings
 appsettings.Development.json
 appsettings.json
+
+cs_contents.txt
+extract_cs.ps1
