@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@auth0/auth0-react": "^2.3.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
@@ -43,13 +44,13 @@
   },
   "overrides": {
     "svgo": {
-        "nth-check": "2.1.1"
+      "nth-check": "2.1.1"
     },
     "resolve-url-loader": {
-        "postcss": "8.5.3"
+      "postcss": "8.5.3"
     },
     "rollup-plugin-terser": {
-        "serialize-javascript": "6.0.2"
+      "serialize-javascript": "6.0.2"
     }
   }
 }
