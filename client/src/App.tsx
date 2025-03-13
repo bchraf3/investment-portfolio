@@ -1,51 +1,34 @@
-import React, { useState } from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { apiService } from './services/api';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
+import { HomePage } from './pages/home-page';
+import { DashboardPage } from './pages/dashboard-page';
+import { ProfilePage } from './pages/profile-page';
+import { CallbackPage } from './pages/callback-page';
+import { NotFoundPage } from './pages/not-found-page';
+import { AuthGuard } from './auth/auth-guard';
+import { Navbar } from './components/layout/nav-bar';
+import { LoadingSpinner } from './components/common/loading-spinner';
 
 function App() {
+  const { isLoading } = useAuth0();
 
-  const [apiMessage, setApiMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const testApi = async () => {
-    try {
-      // Call the test endpoint from your TestController
-      const response = await apiService.get<{ message: string }>('api/test');
-      setApiMessage(response.message);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to connect to API');
-      setApiMessage(null);
-    }
-  };
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload. Wahoo!
-        </p>
-
-        {/* Button to test API connection */}
-        <button onClick={testApi} style={{ margin: '20px 0' }}>
-          Test API Connection
-        </button>
-        
-        {/* Display API response or error */}
-        {apiMessage && <p>API Response: {apiMessage}</p>}
-        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <main>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/callback" element={<CallbackPage />} />
+          <Route path="/dashboard" element={<AuthGuard component={DashboardPage} />} />
+          <Route path="/profile" element={<AuthGuard component={ProfilePage} />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </main>
     </div>
   );
 }
