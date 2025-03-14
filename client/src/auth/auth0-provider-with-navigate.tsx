@@ -17,7 +17,7 @@ export const Auth0ProviderWithNavigate = ({ children }: PropsWithChildren) => {
   };
 
   // Safety check to ensure all required Auth0 configuration is available
-  if (!(domain && clientId && redirectUri)) {
+  if (!(domain && clientId && redirectUri && audience)) {
     return null;
   }
 
