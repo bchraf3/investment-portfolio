@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using InvestmentPortfolio.API.Data;
 using InvestmentPortfolio.API.Repositories;
+using InvestmentPortfolio.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,10 +19,12 @@ builder.Services.AddCors(options =>
 
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddControllers(); // // Registers services needed for MVC controllers so your API endpoints defined in controller classes will work
 builder.Services.AddEndpointsApiExplorer(); // // Adds services that generate API documentation metadata, which helps tools like Swagger understand your API structure
 builder.Services.AddSwaggerGen();
+
+// Add Auth0 Authentication and Authorization
+builder.Services.AddAuth0Authentication(builder.Configuration);
 
 // Add DbContext Service
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -42,35 +45,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-// Use CORS before routing & authorization
 app.UseCors("AllowReactApp"); // Applies the CORS policy we defined earlier, allowing your React frontend to make requests to this backend 
+
+app.UseAuthentication(); // Authentication Must be called before authorization in the pipeline
 
 app.UseAuthorization(); // Enables authorization checks on endpoints that require authorization, even if you're not using it yet
 
 app.MapControllers(); // Connects your controller classes to the routing system so HTTP requests get directed to the right controller methods
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
