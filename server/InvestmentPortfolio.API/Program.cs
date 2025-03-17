@@ -6,7 +6,6 @@ using InvestmentPortfolio.API.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add CORS service
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
@@ -17,10 +16,9 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
-
 // Add services to the container.
-builder.Services.AddControllers(); // // Registers services needed for MVC controllers so your API endpoints defined in controller classes will work
-builder.Services.AddEndpointsApiExplorer(); // // Adds services that generate API documentation metadata, which helps tools like Swagger understand your API structure
+builder.Services.AddControllers(); // Registers services needed for MVC controllers so your API endpoints defined in controller classes will work
+builder.Services.AddEndpointsApiExplorer(); // Adds services that generate API documentation metadata, which helps tools like Swagger understand your API structure
 builder.Services.AddSwaggerGen();
 
 // Add Auth0 Authentication and Authorization
