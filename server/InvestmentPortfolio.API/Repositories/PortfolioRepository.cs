@@ -41,9 +41,9 @@ public class PortfolioRepository : IPortfolioRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeletePortfolioAsync(int id)
+    public async Task DeletePortfolioAsync(int id, string userId)
     {
-        var portfolio = await _context.Portfolios.FindAsync(id);
+            var portfolio = await _context.Portfolios.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
         if (portfolio != null)
         {
             _context.Portfolios.Remove(portfolio);
