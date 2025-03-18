@@ -1,4 +1,3 @@
-// Repositories/IPortfolioRepository.cs
 using InvestmentPortfolio.API.Models;
 
 namespace InvestmentPortfolio.API.Repositories;

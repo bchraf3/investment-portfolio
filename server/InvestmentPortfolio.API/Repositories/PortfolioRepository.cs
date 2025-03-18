@@ -1,4 +1,3 @@
-// Repositories/PortfolioRepository.cs
 using InvestmentPortfolio.API.Data;
 using InvestmentPortfolio.API.Models;
 using Microsoft.EntityFrameworkCore;
