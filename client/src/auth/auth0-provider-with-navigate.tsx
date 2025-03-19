@@ -29,6 +29,7 @@ export const Auth0ProviderWithNavigate = ({ children }: PropsWithChildren) => {
       authorizationParams={{
         redirect_uri: redirectUri,
         audience: audience,
+        scope: "openid profile email read:portfolios write:portfolios delete:portfolios"
       }}
       onRedirectCallback={onRedirectCallback}
     >
