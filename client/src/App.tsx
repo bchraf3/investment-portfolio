@@ -9,9 +9,11 @@ import { NotFoundPage } from './pages/not-found-page';
 import { AuthGuard } from './auth/auth-guard';
 import { Navbar } from './components/layout/nav-bar';
 import { LoadingSpinner } from './components/common/loading-spinner';
+import { useUserSync } from './hooks/useUserSync';
 
 function App() {
   const { isLoading } = useAuth0();
+  useUserSync();
 
   if (isLoading) {
     return <LoadingSpinner />;
