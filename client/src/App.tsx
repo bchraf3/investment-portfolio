@@ -9,10 +9,15 @@ import { NotFoundPage } from './pages/not-found-page';
 import { AuthGuard } from './auth/auth-guard';
 import { Navbar } from './components/layout/nav-bar';
 import { LoadingSpinner } from './components/common/loading-spinner';
+<<<<<<< HEAD
 import { AccountSettingsPage } from './pages/account-settings-page';
+=======
+import { useUserSync } from './hooks/useUserSync';
+>>>>>>> f1585942e56ce46fba7cd82e054aa8bac25f70ea
 
 function App() {
   const { isLoading } = useAuth0();
+  useUserSync();
 
   if (isLoading) {
     return <LoadingSpinner />;
