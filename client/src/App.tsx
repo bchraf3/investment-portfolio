@@ -9,6 +9,7 @@ import { NotFoundPage } from './pages/not-found-page';
 import { AuthGuard } from './auth/auth-guard';
 import { Navbar } from './components/layout/nav-bar';
 import { LoadingSpinner } from './components/common/loading-spinner';
+import { AccountSettingsPage } from './pages/account-settings-page';
 
 function App() {
   const { isLoading } = useAuth0();
@@ -26,6 +27,7 @@ function App() {
           <Route path="/callback" element={<CallbackPage />} />
           <Route path="/dashboard" element={<AuthGuard component={DashboardPage} />} />
           <Route path="/profile" element={<AuthGuard component={ProfilePage} />} />
+          <Route path="/settings" element={<AuthGuard component={AccountSettingsPage} />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
