@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using InvestmentPortfolio.API.Data;
 using InvestmentPortfolio.API.Repositories;
 using InvestmentPortfolio.API.Extensions;
+using InvestmentPortfolio.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add Repositories
 builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
+
+builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
