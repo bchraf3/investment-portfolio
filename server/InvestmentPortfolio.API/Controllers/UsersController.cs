@@ -55,7 +55,7 @@ public class UsersController : ControllerBase
             }
 
             var user = await _userService.SyncUserAsync(userId, userInfo.Email);
-            return Ok(user);
+            return Ok(new { message = "User synced successfully" });
         }
         catch (Exception ex)
         {
