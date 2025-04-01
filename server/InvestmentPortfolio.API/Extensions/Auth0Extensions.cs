@@ -44,6 +44,9 @@ public static class Auth0Extensions
             options.AddPolicy("delete:investments", policy => policy.Requirements.Add(
                 new HasScopeRequirement("delete:investments", domain)
             ));
+            options.AddPolicy("read:preferences", policy => policy.Requirements.Add(
+                new HasScopeRequirement("read:preferences", domain)
+            ));
         });
 
         services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
