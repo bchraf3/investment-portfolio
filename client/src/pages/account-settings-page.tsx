@@ -1,222 +1,183 @@
-import React from "react";
-import { useAuth0 } from "@auth0/auth0-react";
-import { 
-  Cog6ToothIcon, 
-  ChartBarIcon, 
-  ShieldCheckIcon, 
-  BellIcon, 
-  SwatchIcon,
-  SunIcon,
-  MoonIcon,
-  ComputerDesktopIcon
-} from "@heroicons/react/24/outline";
-import { useAccountSettings } from "../hooks/useAccountSettings";
+import React, { useState } from 'react';
+import { useAccountSettings } from '../hooks/useAccountSettings';
 
-export const AccountSettingsPage = () => {
-    const { user } = useAuth0();
-    const {
-        preferences,
-        setThemePreference,
-        toggleEmailNotifications,
-        togglePriceAlerts,
-        togglePortfolioSummaries,
-        setDefaultPortfolioView,
-        setDefaultCurrency,
-        togglePerformanceDisplay
-    } = useAccountSettings();
+const PreferencesPage: React.FC = () => {
+  const {
+    preferences,
+    isLoading,
+    error,
+    savePreferences,
+    setThemePreference,
+    toggleEmailNotifications,
+    togglePriceAlerts,
+    togglePortfolioSummaries,
+    setDefaultPortfolioView,
+    setDefaultCurrency,
+    togglePerformanceDisplay
+  } = useAccountSettings();
+  
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-    if (!user) return null;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
     
-    return (
-        <div className="bg-gray-50 min-h-screen">
-            <div className="max-w-6xl mx-auto px-4 py-8">
-                <div className="flex items-center gap-4 mb-8">
-                    <Cog6ToothIcon className="w-8 h-8 text-primary-600" />
-                    <h1 className="text-3xl font-semibold text-gray-900">Account Settings</h1>
-                </div>
+    try {
+      const success = await savePreferences();
+      if (success) {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
 
-                <div className="grid lg:grid-cols-12 gap-8">
-                    {/* Profile Section */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
-                            <div className="flex flex-col items-center">
-                                <img 
-                                    src={user.picture} 
-                                    alt="Profile" 
-                                    className="w-32 h-32 rounded-full object-cover border-4 border-primary-100"
-                                    loading="eager"
-                                    width={128}
-                                    height={128}
-                                />
-                                <h2 className="text-xl font-semibold mt-4 text-gray-900">{user.name}</h2>
-                                <p className="text-gray-600 text-sm mt-1">{user.email}</p>
-                            </div>
-                        </div>
-                    </div>
+  if (isLoading) {
+    return <div className="text-center p-4">Loading preferences...</div>;
+  }
 
-                    {/* Main Settings */}
-                    <div className="lg:col-span-8 space-y-6">
-                        {/* Display Preferences */}
-                        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
-                            <div className="flex items-center gap-3 mb-6">
-                                <ChartBarIcon className="w-6 h-6 text-primary-600" />
-                                <h2 className="text-xl font-semibold text-gray-900">Display Preferences</h2>
-                            </div>
-                            
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-                                    <div>
-                                        <h4 className="font-medium text-gray-900">Default Currency</h4>
-                                        <p className="text-sm text-gray-600">Set your preferred display currency</p>
-                                    </div>
-                                    <select 
-                                        value={preferences.defaultCurrency}
-                                        onChange={(e) => setDefaultCurrency(e.target.value)}
-                                        className="bg-white rounded-lg px-4 py-2 w-40 border border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                                    >
-                                        <option value="USD">USD ($)</option>
-                                        <option value="EUR">EUR (€)</option>
-                                        <option value="GBP">GBP (£)</option>
-                                    </select>
-                                </div>
-
-                                {/* <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-                                    <div>
-                                        <h4 className="font-medium text-gray-900">Default Portfolio View</h4>
-                                        <p className="text-sm text-gray-600">Choose your default dashboard view</p>
-                                    </div>
-                                    <select 
-                                        value={preferences.defaultPortfolioView}
-                                        onChange={(e) => setDefaultPortfolioView(e.target.value as any)}
-                                        className="bg-white rounded-lg px-4 py-2 w-40 border border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                                    >
-                                        <option value="Summary">Summary</option>
-                                        <option value="Detailed">Detailed</option>
-                                        <option value="Performance">Performance</option>
-                                    </select>
-                                </div>
-
-                                <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-                                    <div>
-                                        <h4 className="font-medium text-gray-900">Performance Display</h4>
-                                        <p className="text-sm text-gray-600">Show performance in percentage or value</p>
-                                    </div>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input 
-                                            type="checkbox" 
-                                            className="sr-only peer" 
-                                            checked={preferences.showPerformanceInPercentage}
-                                            onChange={togglePerformanceDisplay}
-                                        />
-                                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary-500 peer-focus:ring-2 peer-focus:ring-primary-300 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-                                        <span className="ml-3 text-sm font-medium text-gray-700">
-                                            {preferences.showPerformanceInPercentage ? "Percentage" : "Absolute Value"}
-                                        </span>
-                                    </label>
-                                </div> */}
-                            </div>
-                        </div>
-
-                        {/* Theme Settings */}
-                        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
-                            <div className="flex items-center gap-3 mb-6">
-                                <SwatchIcon className="w-6 h-6 text-primary-600" />
-                                <h2 className="text-xl font-semibold text-gray-900">Theme Preferences</h2>
-                            </div>
-                            
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-                                    <div>
-                                        <h4 className="font-medium text-gray-900">Theme Mode</h4>
-                                        <p className="text-sm text-gray-600">Choose your preferred theme</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => setThemePreference("Light")}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${preferences.themePreference === "Light" ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-700'}`}
-                                        >
-                                            <SunIcon className="w-5 h-5" />
-                                            Light
-                                        </button>
-                                        <button
-                                            onClick={() => setThemePreference("Dark")}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${preferences.themePreference === "Dark" ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-700'}`}
-                                        >
-                                            <MoonIcon className="w-5 h-5" />
-                                            Dark
-                                        </button>
-                                        <button
-                                            onClick={() => setThemePreference("System")}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${preferences.themePreference === "System" ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-700'}`}
-                                        >
-                                            <ComputerDesktopIcon className="w-5 h-5" />
-                                            System
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Notification Settings */}
-                        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
-                            <div className="flex items-center gap-3 mb-6">
-                                <BellIcon className="w-6 h-6 text-primary-600" />
-                                <h2 className="text-xl font-semibold text-gray-900">Notification Settings</h2>
-                            </div>
-                            
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-                                    <div>
-                                        <h4 className="font-medium text-gray-900">Email Notifications</h4>
-                                        <p className="text-sm text-gray-600">Receive notifications via email</p>
-                                    </div>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input 
-                                            type="checkbox" 
-                                            className="sr-only peer" 
-                                            checked={preferences.emailNotificationsEnabled}
-                                            onChange={toggleEmailNotifications}
-                                        />
-                                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary-500 peer-focus:ring-2 peer-focus:ring-primary-300 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-                                    </label>
-                                </div>
-
-                                <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-                                    <div>
-                                        <h4 className="font-medium text-gray-900">Price Alerts</h4>
-                                        <p className="text-sm text-gray-600">Get notified when prices hit targets</p>
-                                    </div>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input 
-                                            type="checkbox" 
-                                            className="sr-only peer" 
-                                            checked={preferences.priceAlertNotificationsEnabled}
-                                            onChange={togglePriceAlerts}
-                                        />
-                                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary-500 peer-focus:ring-2 peer-focus:ring-primary-300 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-                                    </label>
-                                </div>
-
-                                <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-                                    <div>
-                                        <h4 className="font-medium text-gray-900">Portfolio Summaries</h4>
-                                        <p className="text-sm text-gray-600">Receive weekly portfolio summaries</p>
-                                    </div>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input 
-                                            type="checkbox" 
-                                            className="sr-only peer" 
-                                            checked={preferences.portfolioSummaryNotificationsEnabled}
-                                            onChange={togglePortfolioSummaries}
-                                        />
-                                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary-500 peer-focus:ring-2 peer-focus:ring-primary-300 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-6">Account Preferences</h1>
+      
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
         </div>
-    );
+      )}
+      
+      {saveSuccess && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          Preferences saved successfully!
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Theme Section */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium mb-4">Display Settings</h2>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Theme Preference
+            </label>
+            <select
+              value={preferences.themePreference}
+              onChange={(e) => setThemePreference(e.target.value as "Light" | "Dark" | "System")}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            >
+              <option value="Light">Light</option>
+              <option value="Dark">Dark</option>
+              <option value="System">System</option>
+            </select>
+          </div>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Default Currency
+            </label>
+            <select
+              value={preferences.defaultCurrency}
+              onChange={(e) => setDefaultCurrency(e.target.value)}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            >
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+              <option value="JPY">JPY</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={preferences.showPerformanceInPercentage}
+                onChange={togglePerformanceDisplay}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <span className="ml-2 text-sm text-gray-700">Show performance as percentage</span>
+            </label>
+          </div>
+        </div>
+        
+        {/* Portfolio View Section */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium mb-4">Portfolio Settings</h2>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Default Portfolio View
+            </label>
+            <select
+              value={preferences.defaultPortfolioView}
+              onChange={(e) => setDefaultPortfolioView(e.target.value as "Summary" | "Detailed" | "Performance")}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            >
+              <option value="Summary">Summary</option>
+              <option value="Detailed">Detailed</option>
+              <option value="Performance">Performance</option>
+            </select>
+          </div>
+        </div>
+        
+        {/* Notifications Section */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium mb-4">Notification Settings</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={preferences.emailNotificationsEnabled}
+                  onChange={toggleEmailNotifications}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-700">Email Notifications</span>
+              </label>
+            </div>
+            
+            <div>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={preferences.priceAlertNotificationsEnabled}
+                  onChange={togglePriceAlerts}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-700">Price Alert Notifications</span>
+              </label>
+            </div>
+            
+            <div>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={preferences.portfolioSummaryNotificationsEnabled}
+                  onChange={togglePortfolioSummaries}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-700">Portfolio Summary Notifications</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={saving || isLoading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save Preferences'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 };
+
+export default PreferencesPage;

@@ -7,7 +7,7 @@ public class UserPreferences
     public ApplicationUser User { get; set; } = null!;
     
     // Theme preferences
-    public string ThemePreference { get; set; } = "Light"; // Light, Dark, System
+    public string ThemePreference { get; set; } = "Dark"; // Light, Dark, System
     
     // Notification settings
     public bool EmailNotificationsEnabled { get; set; } = true;

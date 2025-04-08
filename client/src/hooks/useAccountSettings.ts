@@ -1,5 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import { apiService } from "../services/api";
 
 export interface UserPreferences {
   id?: number;
@@ -14,7 +15,7 @@ export interface UserPreferences {
 }
 
 export const useAccountSettings = () => {
-  const { user } = useAuth0();
+  const { user, getAccessTokenSilently } = useAuth0();
 
   const getDefaultPreferences = useCallback((): UserPreferences => ({
     userId: user?.sub || "",
@@ -28,6 +29,8 @@ export const useAccountSettings = () => {
   }), [user?.sub]);
 
   const [preferences, setPreferences] = useState<UserPreferences>(getDefaultPreferences());
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const updatePreferences = useCallback((updates: Partial<UserPreferences>) => {
     setPreferences(prev => ({
@@ -47,9 +50,61 @@ export const useAccountSettings = () => {
     [updatePreferences]
   );
 
+  // Load preferences from API
+  const loadPreferences = useCallback(async () => {
+    if (!user?.sub) return;
+    
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = await getAccessTokenSilently();
+      // Fix: use the correct API endpoint by adding 'api/'
+      const data = await apiService.get<UserPreferences>('api/Preferences', token);
+      setPreferences(data);
+    } catch (err) {
+      console.error('Failed to load preferences:', err);
+      setError('Failed to load preferences');
+      // Fall back to defaults if API call fails
+      setPreferences(getDefaultPreferences());
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.sub, getAccessTokenSilently, getDefaultPreferences]);
+
+  // Save preferences to API
+  const savePreferences = useCallback(async () => {
+    if (!user?.sub) return;
+    
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = await getAccessTokenSilently();
+      // Fix: use the correct API endpoint by adding 'api/'
+      await apiService.put<void>('api/Preferences', preferences, token);
+      return true;
+    } catch (err) {
+      console.error('Failed to save preferences:', err);
+      setError('Failed to save preferences');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.sub, preferences, getAccessTokenSilently]);
+
+  // Load preferences on initial mount or when user changes
+  useEffect(() => {
+    if (user?.sub) {
+      loadPreferences();
+    }
+  }, [user?.sub, loadPreferences]);
+
   return {
     preferences,
     updatePreferences,
+    isLoading,
+    error,
+    loadPreferences,
+    savePreferences,
     
     // Theme actions
     setThemePreference: createSetter("themePreference"),

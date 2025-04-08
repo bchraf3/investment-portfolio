@@ -32,6 +32,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add Repositories
 builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
 
+builder.Services.AddScoped<IUserPreferencesRepository, UserPreferencesRepository>();
+
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddHttpClient();
