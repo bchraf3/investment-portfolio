@@ -82,51 +82,34 @@ public class PreferencesController : ControllerBase
         _logger.LogInformation("UpdateUserPreferences endpoint called");
         try
         {
-            // Log request details
-            _logger.LogDebug("Request content type: {ContentType}", Request.ContentType);
-            _logger.LogDebug("Request body: {RequestBody}", await new System.IO.StreamReader(Request.Body).ReadToEndAsync());
-            
             string userId = GetUserId();
-            _logger.LogInformation("Processing preference update for user: {UserId}", userId);
-            _logger.LogInformation("Received preferences data: {Preferences}", JsonSerializer.Serialize(preferences));
+            
+            // Log the incoming preferences object for debugging
+            _logger.LogDebug("Incoming preferences: {Preferences}", JsonSerializer.Serialize(preferences));
             
             // Ensure we're updating the correct user's preferences
             preferences.UserId = userId;
-            _logger.LogDebug("Set userId in preferences object to: {UserId}", userId);
             
             var existingPreferences = await _preferencesRepository.GetUserPreferencesAsync(userId);
-            _logger.LogDebug("Existing preferences: {ExistingPreferences}", 
-                existingPreferences != null ? JsonSerializer.Serialize(existingPreferences) : "null");
             
             if (existingPreferences == null)
             {
-                _logger.LogInformation("No existing preferences found, creating new record for user: {UserId}", userId);
-                preferences.Id = 0;
-                
-                var createdPreferences = await _preferencesRepository.CreateUserPreferencesAsync(preferences);
-                _logger.LogInformation("Successfully created preferences with ID: {PreferenceId}", createdPreferences.Id);
-                
-                return CreatedAtAction(nameof(GetUserPreferences), createdPreferences);
+                _logger.LogInformation("Creating new preferences for user: {UserId}", userId);
+                preferences.Id = 0; // Ensure ID is 0 for new record
+                var created = await _preferencesRepository.CreateUserPreferencesAsync(preferences);
+                return CreatedAtAction(nameof(GetUserPreferences), created);
             }
-            else
-            {
-                _logger.LogInformation("Updating existing preferences with ID: {PreferenceId} for user: {UserId}", 
-                    existingPreferences.Id, userId);
-                
-                preferences.Id = existingPreferences.Id;
-                _logger.LogDebug("Before repository update call. Preferences object: {Preferences}", 
-                    JsonSerializer.Serialize(preferences));
-                
-                await _preferencesRepository.UpdateUserPreferencesAsync(preferences);
-                _logger.LogInformation("Successfully updated preferences for user: {UserId}", userId);
-                
-                return NoContent();
-            }
+            
+            // Copy the ID from existing preferences
+            preferences.Id = existingPreferences.Id;
+            
+            await _preferencesRepository.UpdateUserPreferencesAsync(preferences);
+            return Ok(new { success = true, message = "Preferences updated successfully" });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating user preferences");
-            return StatusCode(500, new { error = ex.Message, stackTrace = ex.StackTrace });
+            return StatusCode(500, new { error = ex.Message });
         }
     }
 }

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { apiService } from "../services/api";
+import { API_URL } from "../config";
 
 export interface UserPreferences {
   id?: number;
@@ -73,15 +74,34 @@ export const useAccountSettings = () => {
 
   // Save preferences to API
   const savePreferences = useCallback(async () => {
-    if (!user?.sub) return;
+    if (!user?.sub) return false;
     
     try {
       setIsLoading(true);
       setError(null);
       const token = await getAccessTokenSilently();
-      // Fix: use the correct API endpoint by adding 'api/'
-      await apiService.put<void>('api/Preferences', preferences, token);
-      return true;
+      
+      const response = await fetch(`${API_URL}/api/Preferences`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(preferences)
+      });
+      
+      // Don't try to parse JSON for 204 No Content responses
+      if (response.status === 204) {
+        return true;
+      }
+      
+      // For other successful responses, parse JSON
+      if (response.ok) {
+        await response.json(); // Only if you expect content
+        return true;
+      }
+      
+      throw new Error(`Error: ${response.status}`);
     } catch (err) {
       console.error('Failed to save preferences:', err);
       setError('Failed to save preferences');
@@ -89,7 +109,7 @@ export const useAccountSettings = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.sub, preferences, getAccessTokenSilently]);
+  }, [user?.sub, preferences, getAccessTokenSilently, API_URL]);
 
   // Load preferences on initial mount or when user changes
   useEffect(() => {

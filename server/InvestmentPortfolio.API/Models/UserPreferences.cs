@@ -4,7 +4,7 @@ public class UserPreferences
 {
     public int Id { get; set; }
     public string UserId { get; set; } = string.Empty;
-    public ApplicationUser User { get; set; } = null!;
+    public ApplicationUser? User { get; set; } = null;
     
     // Theme preferences
     public string ThemePreference { get; set; } = "Dark"; // Light, Dark, System

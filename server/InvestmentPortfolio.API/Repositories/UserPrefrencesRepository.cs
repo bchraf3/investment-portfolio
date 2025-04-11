@@ -71,42 +71,33 @@ public class UserPreferencesRepository : IUserPreferencesRepository
     {
         try
         {
-            _logger.LogInformation("Updating preferences for user {UserId} with ID {Id}", 
-                preferences.UserId, preferences.Id);
-            _logger.LogDebug("UpdateUserPreferencesAsync called with preferences: {Preferences}", 
-                JsonSerializer.Serialize(preferences));
+            _logger.LogInformation("Updating preferences for user {UserId}", preferences.UserId);
             
-            // First, detach any existing entity with the same ID to avoid tracking conflicts
-            var existingEntry = _context.ChangeTracker.Entries<UserPreferences>()
-                .FirstOrDefault(e => e.Entity.Id == preferences.Id);
+            // Get existing record by ID
+            var existingPreferences = await _context.UserPreferences
+                .FirstOrDefaultAsync(p => p.Id == preferences.Id);
                 
-            if (existingEntry != null)
+            if (existingPreferences == null)
             {
-                _logger.LogDebug("Detaching existing entry from change tracker");
-                existingEntry.State = EntityState.Detached;
+                throw new KeyNotFoundException($"Preferences with ID {preferences.Id} not found");
             }
             
-            // Attach and mark as modified
-            _context.UserPreferences.Attach(preferences);
-            _context.Entry(preferences).State = EntityState.Modified;
-            _logger.LogDebug("Entity state set to Modified");
+            // Update specific fields only
+            existingPreferences.ThemePreference = preferences.ThemePreference;
+            existingPreferences.EmailNotificationsEnabled = preferences.EmailNotificationsEnabled;
+            existingPreferences.PriceAlertNotificationsEnabled = preferences.PriceAlertNotificationsEnabled;
+            existingPreferences.PortfolioSummaryNotificationsEnabled = preferences.PortfolioSummaryNotificationsEnabled;
+            existingPreferences.DefaultPortfolioView = preferences.DefaultPortfolioView;
+            existingPreferences.DefaultCurrency = preferences.DefaultCurrency;
+            existingPreferences.ShowPerformanceInPercentage = preferences.ShowPerformanceInPercentage;
+        
             
-            var changes = await _context.SaveChangesAsync();
-            _logger.LogInformation("SaveChangesAsync completed. Records affected: {RecordCount}", changes);
-            
-            if (changes == 0)
-            {
-                _logger.LogWarning("No records were updated for user {UserId}", preferences.UserId);
-            }
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            _logger.LogError(ex, "Concurrency error updating preferences for user {UserId}", preferences.UserId);
-            throw;
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Successfully updated preferences for user {UserId}", preferences.UserId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in UpdateUserPreferencesAsync for user {UserId}", preferences.UserId);
+            _logger.LogError(ex, "Error updating preferences for user {UserId}", preferences.UserId);
             throw;
         }
     }
