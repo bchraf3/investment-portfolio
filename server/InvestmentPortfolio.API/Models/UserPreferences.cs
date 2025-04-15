@@ -12,10 +12,7 @@ public class UserPreferences
     // Notification settings
     public bool EmailNotificationsEnabled { get; set; } = true;
     public bool PriceAlertNotificationsEnabled { get; set; } = true;
-    public bool PortfolioSummaryNotificationsEnabled { get; set; } = true;
     
     // Display preferences
-    public string DefaultPortfolioView { get; set; } = "Summary"; // Summary, Detailed, Performance
     public string DefaultCurrency { get; set; } = "USD";
-    public bool ShowPerformanceInPercentage { get; set; } = true;
 }

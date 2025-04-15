@@ -11,10 +11,7 @@ const PreferencesPage = () => {
     setThemePreference,
     toggleEmailNotifications,
     togglePriceAlerts,
-    togglePortfolioSummaries,
-    setDefaultPortfolioView,
     setDefaultCurrency,
-    togglePerformanceDisplay
   } = useAccountSettings();
   
   const [saving, setSaving] = useState(false);
@@ -152,41 +149,6 @@ const PreferencesPage = () => {
                   <option value="JPY">JPY (¥)</option>
                 </select>
               </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <div>
-                  <h4 className="font-medium text-gray-800">Default Portfolio View</h4>
-                  <p className="text-sm text-gray-600">Choose your default dashboard view</p>
-                </div>
-                <select 
-                  value={preferences.defaultPortfolioView}
-                  onChange={(e) => setDefaultPortfolioView(e.target.value as "Summary" | "Detailed" | "Performance")}
-                  className="bg-white rounded-lg px-4 py-2 w-40 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                >
-                  <option value="Summary">Summary</option>
-                  <option value="Detailed">Detailed</option>
-                  <option value="Performance">Performance</option>
-                </select>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <div>
-                  <h4 className="font-medium text-gray-800">Performance Display</h4>
-                  <p className="text-sm text-gray-600">Show performance in percentage or absolute value</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    className="sr-only peer" 
-                    checked={preferences.showPerformanceInPercentage}
-                    onChange={togglePerformanceDisplay}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-500 peer-focus:ring-2 peer-focus:ring-blue-300 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-                  <span className="ml-3 text-sm font-medium text-gray-700">
-                    {preferences.showPerformanceInPercentage ? "Percentage" : "Absolute Value"}
-                  </span>
-                </label>
-              </div>
             </div>
           </div>
           
@@ -227,22 +189,6 @@ const PreferencesPage = () => {
                     className="sr-only peer" 
                     checked={preferences.priceAlertNotificationsEnabled}
                     onChange={togglePriceAlerts}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-500 peer-focus:ring-2 peer-focus:ring-blue-300 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-                </label>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <div>
-                  <h4 className="font-medium text-gray-800">Portfolio Summaries</h4>
-                  <p className="text-sm text-gray-600">Receive weekly portfolio summary reports</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    className="sr-only peer" 
-                    checked={preferences.portfolioSummaryNotificationsEnabled}
-                    onChange={togglePortfolioSummaries}
                   />
                   <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-500 peer-focus:ring-2 peer-focus:ring-blue-300 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
                 </label>

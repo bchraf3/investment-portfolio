@@ -9,10 +9,7 @@ export interface UserPreferences {
   themePreference: "Light" | "Dark" | "System";
   emailNotificationsEnabled: boolean;
   priceAlertNotificationsEnabled: boolean;
-  portfolioSummaryNotificationsEnabled: boolean;
-  defaultPortfolioView: "Summary" | "Detailed" | "Performance";
   defaultCurrency: string;
-  showPerformanceInPercentage: boolean;
 }
 
 export const useAccountSettings = () => {
@@ -23,10 +20,7 @@ export const useAccountSettings = () => {
     themePreference: "System",
     emailNotificationsEnabled: true,
     priceAlertNotificationsEnabled: true,
-    portfolioSummaryNotificationsEnabled: true,
-    defaultPortfolioView: "Summary",
     defaultCurrency: "USD",
-    showPerformanceInPercentage: true,
   }), [user?.sub]);
 
   const [preferences, setPreferences] = useState<UserPreferences>(getDefaultPreferences());
@@ -135,11 +129,8 @@ export const useAccountSettings = () => {
     // Notification actions
     toggleEmailNotifications: createToggleHandler("emailNotificationsEnabled"),
     togglePriceAlerts: createToggleHandler("priceAlertNotificationsEnabled"),
-    togglePortfolioSummaries: createToggleHandler("portfolioSummaryNotificationsEnabled"),
     
     // Display preferences
-    setDefaultPortfolioView: createSetter("defaultPortfolioView"),
     setDefaultCurrency: createSetter("defaultCurrency"),
-    togglePerformanceDisplay: createToggleHandler("showPerformanceInPercentage"),
   };
 };

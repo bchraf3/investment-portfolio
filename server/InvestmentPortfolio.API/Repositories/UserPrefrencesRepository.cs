@@ -86,10 +86,7 @@ public class UserPreferencesRepository : IUserPreferencesRepository
             existingPreferences.ThemePreference = preferences.ThemePreference;
             existingPreferences.EmailNotificationsEnabled = preferences.EmailNotificationsEnabled;
             existingPreferences.PriceAlertNotificationsEnabled = preferences.PriceAlertNotificationsEnabled;
-            existingPreferences.PortfolioSummaryNotificationsEnabled = preferences.PortfolioSummaryNotificationsEnabled;
-            existingPreferences.DefaultPortfolioView = preferences.DefaultPortfolioView;
             existingPreferences.DefaultCurrency = preferences.DefaultCurrency;
-            existingPreferences.ShowPerformanceInPercentage = preferences.ShowPerformanceInPercentage;
         
             
             await _context.SaveChangesAsync();
