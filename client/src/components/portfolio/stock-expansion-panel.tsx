@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp, DollarSign, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Stock } from "../../hooks/usePortfolio";
+import { Stock, usePortfolioManager } from "../../hooks/usePortfolio";
 
 export const StockExpansionPanel = ({
   stock,
@@ -12,6 +12,7 @@ export const StockExpansionPanel = ({
   onRemove: (id: string) => void;
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { calculateProfitLoss } = usePortfolioManager();
 
   const profitLoss = calculateProfitLoss(stock);
   const isProfit = profitLoss >= 0;
@@ -59,7 +60,7 @@ export const StockExpansionPanel = ({
 
       {isExpanded && (
         <div className="p-4 bg-gray-50 border-t border-gray-200">
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-4 gap-4 mb-4">
             <div>
               <p className="text-gray-500 text-sm">Purchase Price</p>
               <p className="font-medium">${stock.purchasePrice.toFixed(2)}</p>
@@ -110,9 +111,4 @@ export const StockExpansionPanel = ({
       )}
     </div>
   );
-};
-
-const calculateProfitLoss = (stock: Stock) => {
-  const currentPrice = stock.currentPrice || stock.purchasePrice;
-  return ((currentPrice - stock.purchasePrice) / stock.purchasePrice) * 100;
 };

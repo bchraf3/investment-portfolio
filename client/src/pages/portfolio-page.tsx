@@ -17,12 +17,12 @@ export default function PortfolioApp() {
     addStock,
     updateStock,
     removeStock,
+    calculateTotalValue,
   } = usePortfolioManager();
 
   const [showAddStockModal, setShowAddStockModal] = useState(false);
   const [sellStockId, setSellStockId] = useState<string | null>(null);
 
-  // Find the active portfolio object
   const currentPortfolio = portfolios.find((p) => p.id === activePortfolio);
 
   const handleAddStock = (stock: Omit<Stock, "id">) => {
@@ -39,10 +39,8 @@ export default function PortfolioApp() {
 
       if (stock) {
         if (quantity >= stock.quantity) {
-          // Remove stock completely
           removeStock(activePortfolio, stockId);
         } else {
-          // Reduce quantity
           updateStock(activePortfolio, stockId, stock.quantity - quantity);
         }
         setSellStockId(null);
@@ -129,10 +127,3 @@ export default function PortfolioApp() {
     </div>
   );
 }
-
-const calculateTotalValue = (stocks: Stock[]) => {
-  return stocks.reduce((total, stock) => {
-    const currentPrice = stock.currentPrice || stock.purchasePrice;
-    return total + currentPrice * stock.quantity;
-  }, 0);
-};

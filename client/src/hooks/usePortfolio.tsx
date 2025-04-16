@@ -17,7 +17,6 @@ export type Portfolio = {
   stocks: Stock[];
 };
 
-// Custom hook for portfolio management
 export const usePortfolioManager = () => {
   // Load portfolios from localStorage if available
   const loadPortfolios = (): Portfolio[] => {

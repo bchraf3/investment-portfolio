@@ -12,7 +12,7 @@ export const PortfolioHeader = ({
   onAddStock: () => void;
 }) => {
   return (
-    <div className="bg-white p-4 border-b border-gray-200 flex justify-between items-center">
+    <div className="h-28 bg-white p-4 border-b border-gray-200 flex justify-between items-center">
       <div>
         <h2 className="text-xl font-bold">{portfolioName}</h2>
         <p className="text-gray-600">

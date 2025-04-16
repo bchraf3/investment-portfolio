@@ -72,7 +72,7 @@ export const Sidebar = ({
               onChange={(e) => setNewPortfolioName(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Portfolio name"
-              className="flex-1 p-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+              className="w-10 flex-1 p-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
             />
             <button
               onClick={handleCreatePortfolio}
@@ -145,12 +145,6 @@ export const Sidebar = ({
             ))}
           </ul>
         )}
-      </div>
-
-      <div className="p-3 border-t border-gray-200 bg-gray-50">
-        <div className="text-xs text-gray-500 text-center">
-          {portfolios.length} portfolio{portfolios.length !== 1 ? "s" : ""}
-        </div>
       </div>
     </div>
   );
