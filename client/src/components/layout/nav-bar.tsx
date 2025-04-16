@@ -24,20 +24,35 @@ export const Navbar = () => {
               {/* No dedicated Home button needed */}
               {isAuthenticated && (
                 <>
-                  <Link to="/dashboard" className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                  <Link
+                    to="/dashboard"
+                    className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
                     Dashboard
                   </Link>
-                  <Link to="/profile" className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                  <Link
+                    to="/portfolio"
+                    className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
+                    Portfolio
+                  </Link>
+                  <Link
+                    to="/profile"
+                    className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
                     Profile
                   </Link>
-                  <Link to="/settings" className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                  <Link
+                    to="/settings"
+                    className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
                     Settings
                   </Link>
                 </>
               )}
             </div>
           </div>
-          
+
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             {!isAuthenticated ? (
               <div className="flex space-x-3">
@@ -52,12 +67,14 @@ export const Navbar = () => {
                   alt={user?.name || "User"}
                 />
                 {/* Change ml-4 to ml-2 to decrease space between picture and name */}
-                <span className="ml-2 mr-6 text-sm text-gray-700">{user?.name}</span>
+                <span className="ml-2 mr-6 text-sm text-gray-700">
+                  {user?.name}
+                </span>
                 <LogoutButton />
               </div>
             )}
           </div>
-          
+
           <div className="-mr-2 flex items-center sm:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -67,7 +84,7 @@ export const Navbar = () => {
             >
               <span className="sr-only">Open main menu</span>
               <svg
-                className={`${isMobileMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
+                className={`${isMobileMenuOpen ? "hidden" : "block"} h-6 w-6`}
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -82,7 +99,7 @@ export const Navbar = () => {
                 />
               </svg>
               <svg
-                className={`${isMobileMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
+                className={`${isMobileMenuOpen ? "block" : "hidden"} h-6 w-6`}
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -101,7 +118,7 @@ export const Navbar = () => {
         </div>
       </div>
 
-      <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} sm:hidden`}>
+      <div className={`${isMobileMenuOpen ? "block" : "hidden"} sm:hidden`}>
         <div className="pt-2 pb-3 space-y-1">
           {/* No Home link in mobile menu either - logo already serves this purpose */}
           {isAuthenticated && (
@@ -114,6 +131,13 @@ export const Navbar = () => {
                 Dashboard
               </Link>
               <Link
+                to="/portfolio"
+                className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Portfolio
+              </Link>
+              <Link
                 to="/profile"
                 className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -123,7 +147,7 @@ export const Navbar = () => {
             </>
           )}
         </div>
-        
+
         <div className="pt-4 pb-3 border-t border-gray-200">
           {isAuthenticated ? (
             <>
@@ -136,8 +160,12 @@ export const Navbar = () => {
                   />
                 </div>
                 <div className="ml-3">
-                  <div className="text-base font-medium text-gray-800">{user?.name}</div>
-                  <div className="text-sm font-medium text-gray-500">{user?.email}</div>
+                  <div className="text-base font-medium text-gray-800">
+                    {user?.name}
+                  </div>
+                  <div className="text-sm font-medium text-gray-500">
+                    {user?.email}
+                  </div>
                 </div>
               </div>
               <div className="mt-3 space-y-1 px-2">

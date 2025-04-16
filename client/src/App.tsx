@@ -1,16 +1,17 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { useAuth0 } from '@auth0/auth0-react';
-import { HomePage } from './pages/home-page';
-import { DashboardPage } from './pages/dashboard-page';
-import { ProfilePage } from './pages/profile-page';
-import { CallbackPage } from './pages/callback-page';
-import { NotFoundPage } from './pages/not-found-page';
-import { AuthGuard } from './auth/auth-guard';
-import { Navbar } from './components/layout/nav-bar';
-import { LoadingSpinner } from './components/common/loading-spinner';
-import PreferencesPage from './pages/account-settings-page';
-import { useUserSync } from './hooks/useUserSync';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
+import { HomePage } from "./pages/home-page";
+import { DashboardPage } from "./pages/dashboard-page";
+import { ProfilePage } from "./pages/profile-page";
+import { CallbackPage } from "./pages/callback-page";
+import { NotFoundPage } from "./pages/not-found-page";
+import { AuthGuard } from "./auth/auth-guard";
+import { Navbar } from "./components/layout/nav-bar";
+import { LoadingSpinner } from "./components/common/loading-spinner";
+import PreferencesPage from "./pages/account-settings-page";
+import { useUserSync } from "./hooks/useUserSync";
+import PortfolioApp from "./pages/portfolio-page";
 function App() {
   const { isLoading } = useAuth0();
   useUserSync();
@@ -26,9 +27,22 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/callback" element={<CallbackPage />} />
-          <Route path="/dashboard" element={<AuthGuard component={DashboardPage} />} />
-          <Route path="/profile" element={<AuthGuard component={ProfilePage} />} />
-          <Route path="/settings" element={<AuthGuard component={PreferencesPage} />} />
+          <Route
+            path="/dashboard"
+            element={<AuthGuard component={DashboardPage} />}
+          />
+          <Route
+            path="/portfolio"
+            element={<AuthGuard component={PortfolioApp} />}
+          />
+          <Route
+            path="/profile"
+            element={<AuthGuard component={ProfilePage} />}
+          />
+          <Route
+            path="/settings"
+            element={<AuthGuard component={PreferencesPage} />}
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
