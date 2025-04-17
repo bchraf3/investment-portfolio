@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { Stock } from "../../hooks/usePortfolio";
 
 type AddStockModalProps = {
   onClose: () => void;
-  onAdd: (stock: Omit<Stock, "id">) => void;
+  onAdd: (stock: {
+    symbol: string;
+    name: string;
+    purchasePrice: number;
+    quantity: number;
+    purchaseDate: string;
+  }) => void;
   prefillStock?: { symbol: string; name: string } | null;
 };
 

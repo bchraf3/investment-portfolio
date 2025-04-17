@@ -7,38 +7,34 @@ import {
   Plus,
 } from "lucide-react";
 import { useState } from "react";
-import { Stock, usePortfolioManager } from "../../hooks/usePortfolio";
+import { Stock2, usePortfolioManager } from "../../hooks/usePortfolio";
 
-type StockGroup = {
-  symbol: string;
-  name: string;
-  purchases: Stock[];
-  totalQuantity: number;
-  averagePrice: number;
-  totalValue: number;
+type StockExpansionPanelProps = {
+  stock: Stock2;
+  onSell: (stockId: string, purchaseId: string) => void;
+  onRemove: (stockId: string, purchaseId: string) => void;
+  onPurchaseMore: (symbol: string, name: string) => void;
 };
 
 export const StockExpansionPanel = ({
-  stockGroup,
+  stock,
   onSell,
   onRemove,
   onPurchaseMore,
-}: {
-  stockGroup: StockGroup;
-  onSell: (id: string) => void;
-  onRemove: (id: string) => void;
-  onPurchaseMore: (symbol: string, name: string) => void;
-}) => {
+}: StockExpansionPanelProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { calculateProfitLoss } = usePortfolioManager();
+  const {
+    calculateProfitLoss,
+    calculateStockValue,
+    calculateTotalQuantity,
+    calculateAveragePrice,
+  } = usePortfolioManager();
 
-  const avgProfitLoss = stockGroup.purchases.reduce((acc, purchase) => {
-    const purchaseProfit = calculateProfitLoss(purchase);
-    const weight = purchase.quantity / stockGroup.totalQuantity;
-    return acc + purchaseProfit * weight;
-  }, 0);
-
-  const isProfit = avgProfitLoss >= 0;
+  const totalValue = calculateStockValue(stock);
+  const totalQuantity = calculateTotalQuantity(stock);
+  const averagePrice = calculateAveragePrice(stock);
+  const profitLoss = calculateProfitLoss(stock);
+  const isProfit = profitLoss >= 0;
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-2">
@@ -54,24 +50,24 @@ export const StockExpansionPanel = ({
           )}
           <div>
             <h3 className="font-bold">
-              {stockGroup.symbol} - {stockGroup.name}
+              {stock.symbol} - {stock.name}
             </h3>
             <div className="flex items-center text-sm">
-              <span>{stockGroup.totalQuantity} shares total</span>
+              <span>{totalQuantity} shares total</span>
               <span className="mx-2">•</span>
               <span
                 className={`font-medium ${isProfit ? "text-green-500" : "text-red-500"}`}
               >
                 {isProfit ? "+" : ""}
-                {avgProfitLoss.toFixed(2)}%
+                {profitLoss.toFixed(2)}%
               </span>
             </div>
           </div>
         </div>
         <div className="text-right">
-          <div className="font-bold">${stockGroup.totalValue.toFixed(2)}</div>
+          <div className="font-bold">${totalValue.toFixed(2)}</div>
           <div className="text-sm text-gray-500">
-            ${stockGroup.averagePrice.toFixed(2)} avg. price
+            ${averagePrice.toFixed(2)} avg. price
           </div>
         </div>
       </div>
@@ -82,20 +78,25 @@ export const StockExpansionPanel = ({
           <div className="p-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h4 className="font-medium text-gray-700">Position Summary</h4>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPurchaseMore(stockGroup.symbol, stockGroup.name);
-                }}
-                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm flex items-center"
-              >
-                <Plus className="h-4 w-4 mr-1" /> Purchase More
-              </button>
+              <div className="group relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPurchaseMore(stock.symbol, stock.name);
+                  }}
+                  className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 flex items-center justify-center"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+                <div className="absolute right-0 -bottom-8 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+                  Add New Purchase
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Individual purchases */}
-          {stockGroup.purchases.map((purchase) => (
+          {stock.purchases.map((purchase) => (
             <div key={purchase.id} className="p-4 border-b border-gray-200">
               <div className="flex items-center mb-2">
                 <Calendar className="h-4 w-4 mr-2 text-gray-500" />
@@ -104,7 +105,7 @@ export const StockExpansionPanel = ({
                   {new Date(purchase.purchaseDate).toLocaleDateString()}
                 </h4>
               </div>
-              <div className="grid grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-5 gap-4 mb-2 items-center">
                 <div>
                   <p className="text-gray-500 text-sm">Purchase Price</p>
                   <p className="font-medium">
@@ -134,26 +135,36 @@ export const StockExpansionPanel = ({
                     ).toFixed(2)}
                   </p>
                 </div>
-              </div>
-              <div className="flex justify-end space-x-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSell(purchase.id);
-                  }}
-                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm flex items-center"
-                >
-                  <DollarSign className="h-4 w-4 mr-1" /> Sell
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemove(purchase.id);
-                  }}
-                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm flex items-center"
-                >
-                  <Trash2 className="h-4 w-4 mr-1" /> Remove
-                </button>
+                <div className="flex space-x-2 items-center justify-end">
+                  <div className="group relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSell(stock.id, purchase.id);
+                      }}
+                      className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 flex items-center justify-center"
+                    >
+                      <DollarSign className="h-4 w-4" />
+                    </button>
+                    <div className="absolute right-0 -bottom-8 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all bg-gray-900 text-white text-xs rounded py-1 px-2">
+                      Sell
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove(stock.id, purchase.id);
+                      }}
+                      className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                    <div className="absolute right-0 -bottom-8 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all bg-gray-900 text-white text-xs rounded py-1 px-2">
+                      Remove
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           ))}

@@ -2,20 +2,25 @@ import { useState, useEffect, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 // Types
-export type Stock = {
+export type Purchase = {
   id: string;
-  symbol: string;
-  name: string;
   purchasePrice: number;
   quantity: number;
   purchaseDate: string;
   currentPrice?: number;
 };
 
+export type Stock2 = {
+  id: string;
+  symbol: string;
+  name: string;
+  purchases: Purchase[];
+};
+
 export type Portfolio = {
   id: string;
   name: string;
-  stocks: Stock[];
+  stocks: Stock2[];
 };
 
 export const usePortfolioManager = () => {
@@ -88,21 +93,70 @@ export const usePortfolioManager = () => {
     [activePortfolio, savePortfoliosToLocalStorage]
   );
 
-  // Add a stock to a portfolio - SIMPLIFIED FIX
+  // Add a stock to a portfolio or add a purchase to an existing stock
   const addStock = useCallback(
-    (portfolioId: string, stockData: Omit<Stock, "id">) => {
-      const newStock: Stock = {
-        ...stockData,
-        id: uuidv4(),
-      };
-
-      // Create a completely new state object
+    (
+      portfolioId: string,
+      stockData: {
+        symbol: string;
+        name: string;
+        purchasePrice: number;
+        quantity: number;
+        purchaseDate: string;
+      }
+    ) => {
       const updatedPortfolios = portfolios.map((portfolio) => {
         if (portfolio.id === portfolioId) {
-          return {
-            ...portfolio,
-            stocks: [...portfolio.stocks, newStock],
-          };
+          // Check if stock already exists
+          const existingStockIndex = portfolio.stocks.findIndex(
+            (s) => s.symbol === stockData.symbol
+          );
+
+          if (existingStockIndex >= 0) {
+            // Add a new purchase to existing stock
+            const newPurchase: Purchase = {
+              id: uuidv4(),
+              purchasePrice: stockData.purchasePrice,
+              quantity: stockData.quantity,
+              purchaseDate: stockData.purchaseDate,
+              currentPrice: stockData.purchasePrice,
+            };
+
+            const updatedStocks = [...portfolio.stocks];
+            updatedStocks[existingStockIndex] = {
+              ...updatedStocks[existingStockIndex],
+              purchases: [
+                ...updatedStocks[existingStockIndex].purchases,
+                newPurchase,
+              ],
+            };
+
+            return {
+              ...portfolio,
+              stocks: updatedStocks,
+            };
+          } else {
+            // Create a new stock with this purchase
+            const newStock: Stock2 = {
+              id: uuidv4(),
+              symbol: stockData.symbol,
+              name: stockData.name,
+              purchases: [
+                {
+                  id: uuidv4(),
+                  purchasePrice: stockData.purchasePrice,
+                  quantity: stockData.quantity,
+                  purchaseDate: stockData.purchaseDate,
+                  currentPrice: stockData.purchasePrice,
+                },
+              ],
+            };
+
+            return {
+              ...portfolio,
+              stocks: [...portfolio.stocks, newStock],
+            };
+          }
         }
         return portfolio;
       });
@@ -110,26 +164,49 @@ export const usePortfolioManager = () => {
       // Update state
       setPortfolios(updatedPortfolios);
 
-      // CRITICAL: Save directly to localStorage here, not depending on the effect
-      localStorage.setItem("portfolios", JSON.stringify(updatedPortfolios));
-      return newStock.id;
+      // Save directly to localStorage
+      savePortfoliosToLocalStorage(updatedPortfolios);
+      return stockData.symbol; // Return symbol for reference
     },
-    [portfolios] // Include portfolios in the dependency array
+    [portfolios, savePortfoliosToLocalStorage]
   );
 
-  // Update stock (for selling partial quantity)
-  const updateStock = useCallback(
-    (portfolioId: string, stockId: string, newQuantity: number) => {
+  // Remove a specific purchase
+  const removePurchase = useCallback(
+    (portfolioId: string, stockId: string, purchaseId: string) => {
       setPortfolios((prevPortfolios) => {
         const newPortfolios = prevPortfolios.map((portfolio) => {
           if (portfolio.id === portfolioId) {
+            // Find the stock
+            const stockIndex = portfolio.stocks.findIndex(
+              (s) => s.id === stockId
+            );
+            if (stockIndex < 0) return portfolio;
+
+            const stock = portfolio.stocks[stockIndex];
+            // Filter out the purchase
+            const updatedPurchases = stock.purchases.filter(
+              (p) => p.id !== purchaseId
+            );
+
+            // If no purchases left, remove the stock
+            if (updatedPurchases.length === 0) {
+              return {
+                ...portfolio,
+                stocks: portfolio.stocks.filter((s) => s.id !== stockId),
+              };
+            }
+
+            // Update the stock with remaining purchases
+            const updatedStocks = [...portfolio.stocks];
+            updatedStocks[stockIndex] = {
+              ...stock,
+              purchases: updatedPurchases,
+            };
+
             return {
               ...portfolio,
-              stocks: portfolio.stocks.map((stock) =>
-                stock.id === stockId
-                  ? { ...stock, quantity: newQuantity }
-                  : stock
-              ),
+              stocks: updatedStocks,
             };
           }
           return portfolio;
@@ -143,15 +220,30 @@ export const usePortfolioManager = () => {
     [savePortfoliosToLocalStorage]
   );
 
-  // Remove a stock from a portfolio
-  const removeStock = useCallback(
-    (portfolioId: string, stockId: string) => {
+  // Update purchase quantity (for selling part of a position)
+  const updatePurchaseQuantity = useCallback(
+    (
+      portfolioId: string,
+      stockId: string,
+      purchaseId: string,
+      newQuantity: number
+    ) => {
       setPortfolios((prevPortfolios) => {
         const newPortfolios = prevPortfolios.map((portfolio) => {
           if (portfolio.id === portfolioId) {
             return {
               ...portfolio,
-              stocks: portfolio.stocks.filter((stock) => stock.id !== stockId),
+              stocks: portfolio.stocks.map((stock) => {
+                if (stock.id !== stockId) return stock;
+
+                return {
+                  ...stock,
+                  purchases: stock.purchases.map((purchase) => {
+                    if (purchase.id !== purchaseId) return purchase;
+                    return { ...purchase, quantity: newQuantity };
+                  }),
+                };
+              }),
             };
           }
           return portfolio;
@@ -173,6 +265,66 @@ export const usePortfolioManager = () => {
     [portfolios]
   );
 
+  // Calculate total quantity for a stock
+  const calculateTotalQuantity = useCallback((stock: Stock2): number => {
+    return stock.purchases.reduce(
+      (total, purchase) => total + purchase.quantity,
+      0
+    );
+  }, []);
+
+  // Calculate average purchase price for a stock
+  const calculateAveragePrice = useCallback(
+    (stock: Stock2): number => {
+      const totalQuantity = calculateTotalQuantity(stock);
+      if (totalQuantity === 0) return 0;
+
+      const totalInvested = stock.purchases.reduce(
+        (sum, purchase) => sum + purchase.purchasePrice * purchase.quantity,
+        0
+      );
+
+      return totalInvested / totalQuantity;
+    },
+    [calculateTotalQuantity]
+  );
+
+  // Calculate total value for a stock
+  const calculateStockValue = useCallback((stock: Stock2): number => {
+    return stock.purchases.reduce((total, purchase) => {
+      const currentPrice = purchase.currentPrice || purchase.purchasePrice;
+      return total + currentPrice * purchase.quantity;
+    }, 0);
+  }, []);
+
+  // Calculate profit/loss percentage for a stock
+  const calculateProfitLoss = useCallback((stock: Stock2): number => {
+    const totalInvested = stock.purchases.reduce(
+      (sum, purchase) => sum + purchase.purchasePrice * purchase.quantity,
+      0
+    );
+
+    const totalValue = stock.purchases.reduce(
+      (sum, purchase) =>
+        sum +
+        (purchase.currentPrice || purchase.purchasePrice) * purchase.quantity,
+      0
+    );
+
+    if (totalInvested === 0) return 0;
+    return ((totalValue - totalInvested) / totalInvested) * 100;
+  }, []);
+
+  // Calculate total portfolio value
+  const calculateTotalValue = useCallback(
+    (stocks: Stock2[]): number => {
+      return stocks.reduce((total, stock) => {
+        return total + calculateStockValue(stock);
+      }, 0);
+    },
+    [calculateStockValue]
+  );
+
   // Simulate getting current prices (in a real app, this would be from an API)
   const refreshStockPrices = useCallback(() => {
     setPortfolios((prevPortfolios) => {
@@ -180,7 +332,10 @@ export const usePortfolioManager = () => {
         ...portfolio,
         stocks: portfolio.stocks.map((stock) => ({
           ...stock,
-          currentPrice: stock.purchasePrice * (0.9 + Math.random() * 0.3), // Random price change
+          purchases: stock.purchases.map((purchase) => ({
+            ...purchase,
+            currentPrice: purchase.purchasePrice * (0.9 + Math.random() * 0.3), // Random price change
+          })),
         })),
       }));
 
@@ -191,19 +346,6 @@ export const usePortfolioManager = () => {
     });
   }, [savePortfoliosToLocalStorage]);
 
-  const calculateProfitLoss = useCallback((stock: Stock) => {
-    const currentPrice = stock.currentPrice || stock.purchasePrice;
-    return ((currentPrice - stock.purchasePrice) / stock.purchasePrice) * 100;
-  }, []);
-
-  // Helper function to calculate total value
-  const calculateTotalValue = useCallback((stocks: Stock[]) => {
-    return stocks.reduce((total, stock) => {
-      const currentPrice = stock.currentPrice || stock.purchasePrice;
-      return total + currentPrice * stock.quantity;
-    }, 0);
-  }, []);
-
   return {
     portfolios,
     activePortfolio,
@@ -211,11 +353,14 @@ export const usePortfolioManager = () => {
     createPortfolio,
     deletePortfolio,
     addStock,
-    updateStock,
-    removeStock,
+    removePurchase,
+    updatePurchaseQuantity,
     getPortfolio,
     refreshStockPrices,
     calculateProfitLoss,
     calculateTotalValue,
+    calculateStockValue,
+    calculateTotalQuantity,
+    calculateAveragePrice,
   };
 };

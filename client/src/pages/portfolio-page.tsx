@@ -1,56 +1,11 @@
 import { useState, useMemo } from "react";
-import { Stock, usePortfolioManager } from "../hooks/usePortfolio";
+import { Stock2, usePortfolioManager } from "../hooks/usePortfolio";
 import { Sidebar } from "../components/portfolio/sidebar";
 import { PortfolioHeader } from "../components/portfolio/portfolio-header";
 import { EmptyPortfolio } from "../components/portfolio/empty-portfolio";
 import { StockExpansionPanel } from "../components/portfolio/stock-expansion-panel";
 import { AddStockModal } from "../components/portfolio/add-stock-modal";
 import { SellStockModal } from "../components/portfolio/sell-stock-modal";
-
-// Function to group stocks by symbol
-const groupStocksBySymbol = (stocks: Stock[]) => {
-  const groups: Record<
-    string,
-    {
-      symbol: string;
-      name: string;
-      purchases: Stock[];
-      totalQuantity: number;
-      averagePrice: number;
-      totalValue: number;
-    }
-  > = {};
-
-  stocks.forEach((stock) => {
-    const currentPrice = stock.currentPrice || stock.purchasePrice;
-
-    if (!groups[stock.symbol]) {
-      groups[stock.symbol] = {
-        symbol: stock.symbol,
-        name: stock.name,
-        purchases: [stock],
-        totalQuantity: stock.quantity,
-        averagePrice: stock.purchasePrice,
-        totalValue: currentPrice * stock.quantity,
-      };
-    } else {
-      const group = groups[stock.symbol];
-      group.purchases.push(stock);
-      group.totalQuantity += stock.quantity;
-
-      // Update total value
-      group.totalValue += currentPrice * stock.quantity;
-
-      // Recalculate average price based on weighted average
-      group.averagePrice =
-        group.purchases.reduce((acc, purchase) => {
-          return acc + purchase.purchasePrice * purchase.quantity;
-        }, 0) / group.totalQuantity;
-    }
-  });
-
-  return Object.values(groups);
-};
 
 export default function PortfolioApp() {
   const {
@@ -60,13 +15,16 @@ export default function PortfolioApp() {
     createPortfolio,
     deletePortfolio,
     addStock,
-    updateStock,
-    removeStock,
+    removePurchase,
+    updatePurchaseQuantity,
     calculateTotalValue,
   } = usePortfolioManager();
 
   const [showAddStockModal, setShowAddStockModal] = useState(false);
-  const [sellStockId, setSellStockId] = useState<string | null>(null);
+  const [sellInfo, setSellInfo] = useState<{
+    stockId: string;
+    purchaseId: string;
+  } | null>(null);
   const [purchaseMoreStock, setPurchaseMoreStock] = useState<{
     symbol: string;
     name: string;
@@ -74,13 +32,13 @@ export default function PortfolioApp() {
 
   const currentPortfolio = portfolios.find((p) => p.id === activePortfolio);
 
-  // Group stocks by symbol
-  const groupedStocks = useMemo(() => {
-    if (!currentPortfolio) return [];
-    return groupStocksBySymbol(currentPortfolio.stocks);
-  }, [currentPortfolio]);
-
-  const handleAddStock = (stock: Omit<Stock, "id">) => {
+  const handleAddStock = (stock: {
+    symbol: string;
+    name: string;
+    purchasePrice: number;
+    quantity: number;
+    purchaseDate: string;
+  }) => {
     if (activePortfolio) {
       addStock(activePortfolio, stock);
       setShowAddStockModal(false);
@@ -88,18 +46,28 @@ export default function PortfolioApp() {
     }
   };
 
-  const handleSellStock = (stockId: string, quantity: number) => {
-    if (activePortfolio && stockId) {
+  const handleSellStock = (
+    stockId: string,
+    purchaseId: string,
+    quantity: number
+  ) => {
+    if (activePortfolio && stockId && purchaseId) {
       const portfolio = portfolios.find((p) => p.id === activePortfolio);
       const stock = portfolio?.stocks.find((s) => s.id === stockId);
+      const purchase = stock?.purchases.find((p) => p.id === purchaseId);
 
-      if (stock) {
-        if (quantity >= stock.quantity) {
-          removeStock(activePortfolio, stockId);
+      if (stock && purchase) {
+        if (quantity >= purchase.quantity) {
+          removePurchase(activePortfolio, stockId, purchaseId);
         } else {
-          updateStock(activePortfolio, stockId, stock.quantity - quantity);
+          updatePurchaseQuantity(
+            activePortfolio,
+            stockId,
+            purchaseId,
+            purchase.quantity - quantity
+          );
         }
-        setSellStockId(null);
+        setSellInfo(null);
       }
     }
   };
@@ -150,18 +118,22 @@ export default function PortfolioApp() {
 
               {/* Stocks List */}
               <div className="flex-1 overflow-y-auto p-4">
-                {currentPortfolio?.stocks.length === 0 ? (
+                {currentPortfolio?.stocks?.length === 0 ? (
                   <EmptyPortfolio
                     onAddStock={() => setShowAddStockModal(true)}
                   />
                 ) : (
                   <div className="space-y-2">
-                    {groupedStocks.map((stockGroup) => (
+                    {currentPortfolio?.stocks?.map((stock) => (
                       <StockExpansionPanel
-                        key={stockGroup.symbol}
-                        stockGroup={stockGroup}
-                        onSell={(id) => setSellStockId(id)}
-                        onRemove={(id) => removeStock(activePortfolio, id)}
+                        key={stock.id}
+                        stock={stock}
+                        onSell={(stockId, purchaseId) =>
+                          setSellInfo({ stockId, purchaseId })
+                        }
+                        onRemove={(stockId, purchaseId) =>
+                          removePurchase(activePortfolio, stockId, purchaseId)
+                        }
                         onPurchaseMore={handlePurchaseMore}
                       />
                     ))}
@@ -185,11 +157,12 @@ export default function PortfolioApp() {
         />
       )}
 
-      {sellStockId && (
+      {sellInfo && currentPortfolio && (
         <SellStockModal
-          stockId={sellStockId}
+          stockId={sellInfo.stockId}
+          purchaseId={sellInfo.purchaseId}
           portfolio={currentPortfolio}
-          onClose={() => setSellStockId(null)}
+          onClose={() => setSellInfo(null)}
           onSell={handleSellStock}
         />
       )}

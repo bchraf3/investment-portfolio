@@ -57,7 +57,7 @@ export const Sidebar = ({
 
   return (
     <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col h-full shadow-sm">
-      <div className="p-4 border-b border-gray-200">
+      <div className="h-28 p-4 border-b border-gray-200">
         <h2 className="font-bold text-gray-800 mb-3 text-lg flex items-center">
           <FolderPlus className="mr-2 h-5 w-5 text-blue-500" />
           Your Portfolios
